@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<!--  Custom CSS -->
+<link href="/html/signin.css" type="text/css" rel="stylesheet">
+
+<script>
+	var valid = true;
+
+	function validate() {
+		valid = true;
+		validateEmail();
+		validatePasswords();
+		return valid;
+	}
+
+	function validateEmail() {
+		var field = $("#signupEmail");
+		var email = field.val();
+		if (!email.match(/\S+@\S+\.\S+/)) {
+			valid = false;
+			generateTooltip(field, "Please enter a valid e-mail address");
+			paintRed(field);
+		} else {
+			$.post("/usernameExists", {
+				email : email
+			}, function(data) {
+				data = $.trim(data);
+				if (data === "exists") {
+					valid = false;
+					window.alert("Now valid is " + valid);
+					generateTooltip(field,
+							"This e-mail address is already being used");
+					paintRed(field);
+				} else {
+					removeTooltipAndColor(field);
+				}
+			});
+		}
+	}
+
+	function validatePasswords() {
+		var field = $("#signupPassword");
+		var signupPassword = field.val();
+		if (signupPassword !== $("#signupPasswordRepeat").val()
+				|| !signupPassword.match(/\S/)) {
+			valid = false;
+			generateTooltip(field, "The passwords do not match");
+			paintRed(field);
+		} else {
+			removeTooltipAndColor(field);
+		}
+	}
+
+	function generateTooltip(field, text) {
+		field.attr({
+			"data-toggle" : "popover",
+			"data-trigger" : "focus",
+			"data-content" : text
+		});
+		$(document).ready(function() {
+			$('[data-toggle="popover"]').popover();
+		});
+	}
+
+	function paintRed(field) {
+		field.css("border", "1px solid red");
+	}
+
+	function removeTooltipAndColor(field) {
+		field.popover("destroy");
+		field.css("border", "");
+	}
+</script>
+
+</head>
+
+<body>
+	<div class="container">
+		<form class="form-signin">
+			<h2 class="form-signin-heading">Please sign in</h2>
+			<label for="inputUsername" class="sr-only">Username</label>
+			<input type="text" id="inputEmail" class="form-control"
+				placeholder="Email address" required>
+			<label for="inputPassword" class="sr-only">Password</label>
+			<input type="password" id="inputPassword" class="form-control"
+				placeholder="Password" required>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" value="remember-me">
+					Remember me
+				</label>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign
+				in</button>
+			<div class="text">or</div>
+			<button type="button" class="btn btn-lg btn-primary btn-block"
+				data-toggle="modal" data-target="#signupModal">Sign up</button>
+		</form>
+
+		<div id="signupModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Sign up</h4>
+					</div>
+					<div class="modal-body">
+						<form id="signupForm" class="form-signin" action="/newUser"
+							novalidate="novalidate" method="post" onSubmit="return validate()">
+							<label for="signupEmail" class="sr-only">Email address</label>
+							<input type="email" id="signupEmail" class="form-control"
+								placeholder="Email address" name="email" required>
+							<label for="signupPassword" class="sr-only">Password</label>
+							<input type="password" id="signupPassword" class="form-control"
+								placeholder="Password" name="password" required>
+							<label for="signupPasswordRepeat" class="sr-only">Repeat password</label>
+							<input type="password" id="signupPasswordRepeat" class="form-control"
+								placeholder="Repeat password" required>
+							<button id="signupBtn" class="btn btn-lg btn-primary btn-block"
+								type="submit">Sign up</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>
